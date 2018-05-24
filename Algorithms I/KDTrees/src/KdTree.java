@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
@@ -58,8 +60,11 @@ public class KdTree {
 	
 			}
 			newNode.rect = rect;
+			n++;
 			return newNode;
 		}
+		if (node.p.equals(p))
+			return node;
 		int cmp = orientation ? Point2D.X_ORDER.compare(p, node.p) : Point2D.Y_ORDER.compare(p, node.p);
 		if (cmp < 0)
 			node.lb = insert(node, node.lb, p, !orientation);
@@ -116,19 +121,84 @@ public class KdTree {
 	}
 
 	// all points that are inside the rectangle (or on the boundary)
-	/*public Iterable<Point2D> range(RectHV rect) {
-
+	public Iterable<Point2D> range(RectHV rect) {
+		if (rect == null) {
+			throw new IllegalArgumentException();
+		}
+		LinkedList<Point2D> list = new LinkedList<Point2D>();
+		range(root, rect, list);
+		return list;
+	}
+	
+	private void range(Node node, RectHV rect, LinkedList<Point2D> list) {
+		if (node == null) {
+			return;
+		}
+		if (rect.contains(node.p)) {
+			list.add(node.p);
+		}
+		if (node.lb != null && node.lb.rect.intersects(rect)) {
+			range(node.lb, rect, list);
+		}
+		if (node.rt != null && node.rt.rect.intersects(rect)) {
+			range(node.rt, rect, list);
+		}
 	}
 
 	// a nearest neighbor in the set to point p; null if the set is empty
 	public Point2D nearest(Point2D p) {
+		if (p == null) {
+			throw new IllegalArgumentException();
+		}
+		if (root == null) 
+			return null;
+		
+		return nearest(root, p, root.p);
+	}
+	
+	private Point2D nearest(Node node, Point2D p, Point2D closest) {
+		if (p == null) 
+			throw new IllegalArgumentException();
+		double dClosest, dCurrent;
+		
+		dCurrent = node.rect.distanceSquaredTo(p);
+		dClosest = p.distanceSquaredTo(closest);
+		
+		if (dCurrent > dClosest)
+			return closest;
+		
+		dCurrent = p.distanceSquaredTo(node.p);
+		if (dCurrent <= dClosest) {
+			closest = node.p;
+			dClosest = dCurrent;
+		}
+		if (node.lb != null && node.rt != null) {
+			if (node.lb.rect.contains(p)) {
+				closest = nearest(node.lb, p, closest);
+				closest = nearest(node.rt, p, closest);
+				
+			} else {
+				closest = nearest(node.rt, p, closest);
+				closest = nearest(node.lb, p, closest);
 
+			} 
+		} else if (node.lb != null) {
+			closest = nearest(node.lb, p, closest);
+
+		} else if (node.rt != null) {
+			closest = nearest(node.rt, p, closest);
+
+		}
+		return closest;
+
+
+		
 	}
 
 	// unit testing of the methods (optional)
 	public static void main(String[] args) {
-
-	}*/
+		
+	}
 
 	private static class Node {
 		private Point2D p; // the point
