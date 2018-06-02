@@ -44,6 +44,7 @@ public class KdTree {
 				int cmp;
 				if (orientation) {
 					cmp = Point2D.Y_ORDER.compare(p, parent.p);
+					//adopted convention that less means strictly less
 					if (cmp < 0) {
 						rect = new RectHV(parent.rect.xmin(), parent.rect.ymin(), parent.rect.xmax(), parent.p.y());
 					} else {
@@ -51,6 +52,7 @@ public class KdTree {
 					}
 				} else {
 					cmp =  Point2D.X_ORDER.compare(p, parent.p);
+					//adopted convention that less means strictly less
 					if (cmp < 0) {
 						rect = new RectHV(parent.rect.xmin(), parent.rect.ymin(), parent.p.x(), parent.rect.ymax());
 					} else {
@@ -153,46 +155,47 @@ public class KdTree {
 		if (root == null) 
 			return null;
 		
-		return nearest(root, p, root.p);
+		return nearest(root, p, root.p, true);
 	}
 	
-	private Point2D nearest(Node node, Point2D p, Point2D closest) {
-		if (p == null) 
+	private Point2D nearest(Node node, Point2D p, Point2D closest, boolean orientation) {
+		if (p == null)
 			throw new IllegalArgumentException();
 		double dClosest, dCurrent;
-		
+
 		dCurrent = node.rect.distanceSquaredTo(p);
 		dClosest = p.distanceSquaredTo(closest);
-		
+
 		if (dCurrent > dClosest)
 			return closest;
-		
+
 		dCurrent = p.distanceSquaredTo(node.p);
 		if (dCurrent <= dClosest) {
 			closest = node.p;
 			dClosest = dCurrent;
 		}
 		if (node.lb != null && node.rt != null) {
-			if (node.lb.rect.contains(p)) {
-				closest = nearest(node.lb, p, closest);
-				closest = nearest(node.rt, p, closest);
-				
-			} else {
-				closest = nearest(node.rt, p, closest);
-				closest = nearest(node.lb, p, closest);
+			int cmp;
 
-			} 
+			cmp = orientation ? Point2D.X_ORDER.compare(p, node.p) : Point2D.Y_ORDER.compare(p, node.p);
+			// adopted convention that less means strictly less
+			if (cmp < 0) {
+				closest = nearest(node.lb, p, closest, !orientation);
+				closest = nearest(node.rt, p, closest, !orientation);
+			} else {
+				closest = nearest(node.rt, p, closest, !orientation);
+				closest = nearest(node.lb, p, closest, !orientation);
+			}
+
 		} else if (node.lb != null) {
-			closest = nearest(node.lb, p, closest);
+			closest = nearest(node.lb, p, closest, !orientation);
 
 		} else if (node.rt != null) {
-			closest = nearest(node.rt, p, closest);
+			closest = nearest(node.rt, p, closest, !orientation);
 
 		}
 		return closest;
 
-
-		
 	}
 
 	// unit testing of the methods (optional)

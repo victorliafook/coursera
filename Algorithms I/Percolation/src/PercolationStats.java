@@ -5,6 +5,8 @@ public class PercolationStats {
 	private double[] thresholds;
 	private int size;
 	private int experiments;
+	private double mean;
+	private double stddev;
 
 	// perform trials independent experiments on an n-by-n grid
 	public PercolationStats(int n, int trials) {
@@ -18,28 +20,30 @@ public class PercolationStats {
 		for (int i = 0; i < trials; i++) {
 			thresholds[i] = percolationThreshold();
 		}
+		mean = StdStats.mean(thresholds);
+		stddev = StdStats.stddev(thresholds);
 	}
 
 	// sample mean of percolation threshold
 	public double mean() {
-		return StdStats.mean(thresholds);
+		return mean;
 	}
 
 	// sample standard deviation of percolation threshold
 	public double stddev() {
 		if (experiments == 1)
 			return Double.NaN;
-		return StdStats.stddev(thresholds);
+		return stddev;
 	}
 
 	// low endpoint of 95% confidence interval
 	public double confidenceLo() {
-		return mean() - 1.96 * stddev() / Math.sqrt(experiments);
+		return mean - 1.96 * stddev / Math.sqrt(experiments);
 	}
 
 	// high endpoint of 95% confidence interval
 	public double confidenceHi() {
-		return mean() + 1.96 * stddev() / Math.sqrt(experiments);
+		return mean + 1.96 * stddev / Math.sqrt(experiments);
 	}
 
 	private double percolationThreshold() {
@@ -54,7 +58,7 @@ public class PercolationStats {
 			count++;
 			p.open(i, j);
 		}
-		return count / (size * size);
+		return (double) count / (size * size);
 	}
 
 	public static void main(String[] args) {

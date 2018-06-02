@@ -16,7 +16,6 @@ public class FastCollinearPoints {
 			pointSet[i] = points[i];
 		}
 		LinkedList<LineSegment> segmentsList = new LinkedList<LineSegment>();
-		LinkedList<SeenLine> linesList = new LinkedList<SeenLine>();
 		Point[] pointSetCopy;
 		for (int i = 0; i < pointSet.length - 1; i++) {
 			Point p = pointSet[i];
@@ -24,6 +23,7 @@ public class FastCollinearPoints {
 			
 			//only sort from the current i onwards - avoids having to check for duplicated line segments and performs better.
 			Arrays.sort(pointSetCopy, i + 1, pointSet.length, p.slopeOrder());
+			Arrays.sort(pointSetCopy, 0, i, p.slopeOrder());
 			//checks for duplicates points - they should be adjacent after sorting
 			if (p.compareTo(pointSetCopy[i+1]) == 0) {
 				throw new IllegalArgumentException();
@@ -42,15 +42,14 @@ public class FastCollinearPoints {
 						if (ls.size() > 3) {
 							//ls.add(pointSetCopy[j]);
 							boolean contains = false;
-							for (SeenLine s : linesList) {
-								if(lastSlope.equals(p.slopeTo(s.point))) {	
+							for (int k = 0; k < i; k++) {
+								if(lastSlope.equals(p.slopeTo(pointSetCopy[k]))) {	
 									contains = true;
 								}
 							}
 							if (!contains) {
 								Point[] ps = ls.toArray(new Point[0]);
 								Arrays.sort(ps);
-								linesList.add(new SeenLine(lastSlope, p));
 								segmentsList.add(new LineSegment(ps[0], ps[ps.length - 1]));
 							}
 						}
@@ -65,8 +64,8 @@ public class FastCollinearPoints {
 				}
 				if (ls.size() > 3 ) {
 					boolean contains = false;
-					for (SeenLine s : linesList) {
-						if(lastSlope.equals(p.slopeTo(s.point))) {	
+					for (int k = 0; k < i; k++) {
+						if(lastSlope.equals(p.slopeTo(pointSetCopy[k]))) {	
 							contains = true;
 						}
 					}
@@ -74,7 +73,6 @@ public class FastCollinearPoints {
 						//ls.add(pointSetCopy[j]);
 						Point[] ps = ls.toArray(new Point[0]);
 						Arrays.sort(ps);
-						linesList.add(new SeenLine(lastSlope, p));
 						segmentsList.add(new LineSegment(ps[0], ps[ps.length - 1]));
 					}
 				}
@@ -82,7 +80,6 @@ public class FastCollinearPoints {
 			}
 			
 		}
-		linesList = null;
 		lineSegments = segmentsList.toArray(new LineSegment[0]);
 	}
 
@@ -96,15 +93,4 @@ public class FastCollinearPoints {
 		return Arrays.copyOf(lineSegments, lineSegments.length);
 	}
 	
-	private class SeenLine{
-		public Double slope;
-		public Point point;
-		
-		public SeenLine(Double slope, Point point) {
-			this.slope = slope;
-			this.point = point;
-		}
-		
-		
-	}
 }
