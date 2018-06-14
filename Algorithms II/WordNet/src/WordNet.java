@@ -17,20 +17,34 @@ public class WordNet {
 		if (synsets == null || hypernyms == null)
 			throw new IllegalArgumentException();
 		int numberOfLines = 0;
-		LineNumberReader lineNumberReader;
-		
+				
 		try {
-			lineNumberReader = new LineNumberReader(new FileReader(synsets));
-			lineNumberReader.skip(Long.MAX_VALUE);
-			numberOfLines = lineNumberReader.getLineNumber();
+			numberOfLines = getNumberOfLines(synsets);
 		} catch (Exception e) {
 			//TODO: 
 			e.printStackTrace();
 		}   
         
 		DAG = new Digraph(numberOfLines);
+		loadSynsetsFromFile(synsets);
+		loadHypernymsFromFile(hypernyms);
+		
+	}
+	
+	private int getNumberOfLines(String filename) throws Exception{
+		int numberOfLines = 0;
+		LineNumberReader lineNumberReader;
+		lineNumberReader = new LineNumberReader(new FileReader(filename));
+		lineNumberReader.skip(Long.MAX_VALUE);
+		numberOfLines = lineNumberReader.getLineNumber();
+		lineNumberReader.close();
+		
+		return numberOfLines;
+	}
+	
+	private void loadSynsetsFromFile (String filename) {
 		graphValues = new ST<Integer, String>();
-		In synsetsIn = new In(synsets);
+		In synsetsIn = new In(filename);
 		// firstly, read the synsets file, inserting the vertices
 		// "Line i of the file (counting from 0) contains the information for synset i"
 		int linetrack = 0;
@@ -66,12 +80,15 @@ public class WordNet {
 			 */
 			linetrack++;
 		}
-		In hypernymsIn = new In(hypernyms);
+	}
+	
+	private void loadHypernymsFromFile (String filename) {
+		In hypernymsIn = new In(filename);
 		// "Line i of the file (counting from 0) contains the information for synset i"
-		linetrack = 0;
+		int linetrack = 0;
 		while (!hypernymsIn.isEmpty()) {
 			String[] hypernymsFileTokens;
-			String line = synsetsIn.readLine().trim();
+			String line = hypernymsIn.readLine().trim();
 			hypernymsFileTokens = line.split(",");
 			//if first token is not the line number, illegal input
 			int synset = Integer.parseInt(hypernymsFileTokens[0]);

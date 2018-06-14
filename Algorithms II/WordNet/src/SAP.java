@@ -62,7 +62,7 @@ public class SAP {
 		for(int vertex = 0; vertex < G.V(); vertex++) {
 			dv = bfsv.distTo(vertex);
 			dw = bfsw.distTo(vertex);
-			if (dv + dw < dsap) {
+			if (dv != INFINITY && dw != INFINITY && (dv + dw < dsap)) {
 				dsap = dv + dw;
 			} 
 		}
@@ -81,7 +81,7 @@ public class SAP {
 		for(int vertex = 0; vertex < G.V(); vertex++) {
 			dv = bfsv.distTo(vertex);
 			dw = bfsw.distTo(vertex);
-			if (dv + dw < dsap) {
+			if (dv != INFINITY && dw != INFINITY && (dv + dw < dsap)) {
 				ancestor = vertex;
 				dsap = dv + dw;
 			} 
